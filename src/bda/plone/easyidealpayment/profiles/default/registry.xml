@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<registry>
+
+  <records interface="bda.plone.easyidealpayment.IeasyidealPaymentSettings">
+    <value key="easyideal_server_url" purge="false">https://secure.easyideal.com/ncol/test/orderstandard.asp</value>
+    <value key="easyideal_sha_in_password" purge="false">SHAin</value>
+    <value key="easyideal_sha_out_password" purge="false">SHAout</value>
+  </records>
+
+</registry>
