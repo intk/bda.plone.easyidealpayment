@@ -74,16 +74,11 @@ class easyidealPay(BrowserView):
         real_amount = D(int(amount)/100.0)
 
         try:
-
             transaction_response = easy_ideal.request_transaction(real_amount, 'ING', str(ordernumber), '%s/@@easyideal_payment_success?order_id=%s'%(base_url, ordernumber))
             redirect_url = transaction_response.bank_url
             transaction_id = transaction_response.transaction_id
             transaction_code = transaction_response.transaction_code
             checksum = transaction_response.checksum
-
-            order = OrderData(self.context, uid=order_uid)
-            order.tid = "%s;%s" % (transaction_id, transaction_code)
-
         except Exception, e:
             logger.error(u"Could not initialize payment: '%s'" % str(e))
             redirect_url = '%s/@@easyideal_payment_failed?uid=%s' \
@@ -103,9 +98,9 @@ class easyidealPaySuccess(BrowserView):
             ordernumber = data["order_id"]
             order_uid = IPaymentData(self.context).uid_for(ordernumber)
 
-            if status == '1':    
-                order = OrderData(self.context, uid=order_uid)
+            if status == '1':
                 payment.succeed(self.context, order_uid)
+                order = OrderData(self.context, uid=order_uid)
                 order.salaried = ifaces.SALARIED_YES
                 return True
             else:
