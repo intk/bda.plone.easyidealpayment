@@ -112,7 +112,18 @@ class easyidealPaySuccess(BrowserView):
     @property
     def shopmaster_mail(self):
         return shopmaster_mail(self.context)
-    
+ 
+#
+# Payment finalized
+#
+
+class easyidealPayFinalized(BrowserView):
+    def verify(self):
+        return True
+    @property
+    def shopmaster_mail(self):
+        return shopmaster_mail(self.context)
+        
 #
 # Payment failed
 #

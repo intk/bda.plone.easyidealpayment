@@ -12,6 +12,14 @@
 
   <browser:page
     for="*"
+    name="easyideal_payment_finalized"
+    template="finalized.pt"
+    class=".easyidealPayFinalized"
+    permission="zope2.View"
+  />
+
+  <browser:page
+    for="*"
     name="easyideal_payment_success"
     template="success.pt"
     class=".easyidealPaySuccess"
