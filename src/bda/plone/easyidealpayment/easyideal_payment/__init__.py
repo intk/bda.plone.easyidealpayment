@@ -27,6 +27,7 @@ from ZTUtils import make_query
 from bda.plone.orders.common import get_order
 from security import easyidealSignature
 from easyideal import EasyIdeal
+from easyideal import ReturnValidator
 from decimal import Decimal as D
 
 
@@ -38,9 +39,9 @@ _ = MessageFactory('bda.plone.payment')
 #
 
 API_URL = "https://www.qantanipayments.com/api/"
-MERCHANT_ID = ""
-MERCHANT_KEY = ""
-MERCHANT_SECRET = ""
+MERCHANT_ID = "2699"
+MERCHANT_KEY = "JiJ3vrR"
+MERCHANT_SECRET = "pjrO8FfLSmxckVOv6IPsl7i1H"
 
 #
 # Util functions
@@ -63,30 +64,55 @@ class easyidealPay(BrowserView):
     def __call__(self):
         base_url = self.context.absolute_url()
         order_uid = self.request['uid']
-        
+
         easy_ideal = EasyIdeal(MERCHANT_ID, MERCHANT_KEY, MERCHANT_SECRET)
-        banks_response = easy_ideal.request_banks()
 
-        print banks_response
-
-        transaction_response = easy_ideal.request_transaction(
-        D(100), 'RABOBANK', 'Order number 10', 'http://127.0.0.1:8000/@@easyideal_success')
-
-        print transaction_response
+        data = IPaymentData(self.context).data(order_uid)
+        amount = data["amount"]
+        ordernumber = data["ordernumber"]
         
-        transaction_status_response = easy_ideal.request_transaction_status(
-            transaction_id=transaction_response.transaction_id,
-            transaction_code=transaction_response.transaction_code
-        )
-        
-        print transaction_status_response
+        real_amount = D(int(amount)/100.0)
+
+        try:
+
+            transaction_response = easy_ideal.request_transaction(real_amount, 'ING', str(ordernumber), '%s/@@easyideal_payment_success?order_id=%s'%(base_url, ordernumber))
+            redirect_url = transaction_response.bank_url
+            transaction_id = transaction_response.transaction_id
+            transaction_code = transaction_response.transaction_code
+            checksum = transaction_response.checksum
+
+            order = OrderData(self.context, uid=order_uid)
+            order.tid = "%s;%s" % (transaction_id, transaction_code)
+
+        except Exception, e:
+            logger.error(u"Could not initialize payment: '%s'" % str(e))
+            redirect_url = '%s/@@easyideal_payment_failed?uid=%s' \
+                % (base_url, order_uid)
+        raise Redirect(redirect_url)
 
 #
 # Payment success
 #
 class easyidealPaySuccess(BrowserView):
     def verify(self):
-        return True
+        data = self.request.form
+        
+        if 'status' in data.keys():
+            status = data["status"]
+            payment = Payments(self.context).get('easyideal_payment')
+            ordernumber = data["order_id"]
+            order_uid = IPaymentData(self.context).uid_for(ordernumber)
+
+            if status == '1':    
+                order = OrderData(self.context, uid=order_uid)
+                payment.succeed(self.context, order_uid)
+                order.salaried = ifaces.SALARIED_YES
+                return True
+            else:
+                payment.failed(self.context, order_uid)
+                return False
+        else:
+            return False
 
     @property
     def shopmaster_mail(self):
@@ -98,6 +124,9 @@ class easyidealPaySuccess(BrowserView):
 class easyidealPayFailed(BrowserView):
     def finalize(self):
         return True
+    @property
+    def shopmaster_mail(self):
+        return shopmaster_mail(self.context)
 
 class easyidealError(Exception):
     """Raised if Easy-iDeal Payment return an error.
