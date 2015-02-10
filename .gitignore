@@ -13,7 +13,7 @@
 /local/
 /parts/
 /var/
-/src/bda.plone.ogonepayment.egg-info/
+/src/bda.plone.easyidealpayment.egg-info/
 *.mo
 .DS_Store
 /vpython/

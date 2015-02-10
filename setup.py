@@ -4,10 +4,10 @@ from setuptools import find_packages
 
 
 version = '0.1'
-shortdesc = "Ogone Payment for bda.plone.shop"
+shortdesc = "Easy-iDeal Payment for bda.plone.shop"
 
 setup(
-    name='bda.plone.ogonepayment',
+    name='bda.plone.easyidealpayment',
     version=version,
     description=shortdesc,
     classifiers=[
