@@ -23,10 +23,18 @@
       
         <h1 class="documentFirstHeading"
             i18n:translate="payment_success">Payment Success</h1>
-    
-        <p i18n:translate="six_payment_success_text">
-          Your Order has been completed successful.
-        </p>
+        
+        <div class="results-wrapper">
+          <div class="wrapper-result-page">
+            <p i18n:translate="six_payment_success_text">
+              Your Order has been completed successful.
+            </p>
+            <a href=""
+             class="payment_button"
+             tal:attributes="href context/absolute_url"
+             i18n:translate="payment_done">continue</a>
+          </div>
+        </div>
       
       </tal:verified>
       
@@ -35,25 +43,24 @@
         <h1 class="documentFirstHeading"
             i18n:translate="payment_error">Payment Error</h1>
         
-        <p>
-          <span i18n:translate="six_payment_verification_failed">
-            Something nasty is going on. Payment verification failed.
-            If you think the failure remains on our side, please contact
-          </span>
-          <a href="mailto:shopmaster@example.com"
-             tal:attributes="href string:mailto:${view/shopmaster_mail}"
-             i18n:translate="us">us</a>
-        </p>
+        
+        <div class="results-wrapper">
+          <div class="wrapper-result-page">
+            <p><span i18n:translate="six_payment_verification_failed">
+              Something nasty is going on. Payment verification failed.
+              If you think the failure remains on our side, please contact
+            </span></p>
+            <a href="mailto:shopmaster@example.com"
+               tal:attributes="href string:mailto:${view/shopmaster_mail}"
+               i18n:translate="us">us</a>
+          
+          </div>
+        </div>
       
       </tal:verification_failed>
     
     </tal:block>
     
-    <a href=""
-       class="payment_button"
-       tal:attributes="href context/absolute_url"
-       i18n:translate="payment_done">continue</a>
-
   </tal:main-macro>
 </metal:main>
 
