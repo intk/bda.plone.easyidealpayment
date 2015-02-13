@@ -50,12 +50,16 @@ def shopmaster_mail(context):
     props = getToolByName(context, 'portal_properties')
     return props.site_properties.email_from_address
 
+def get_banks():
+    easy_ideal = EasyIdeal(MERCHANT_ID, MERCHANT_KEY, MERCHANT_SECRET)
+    return easy_ideal.request_banks()
+
 class easyidealPayment(Payment):
     pid = 'easyideal_payment'
     label = _('easyideal_payment', 'Easy-iDeal Payment')
 
-    def init_url(self, uid):
-        return '%s/@@easyideal_payment?uid=%s' % (self.context.absolute_url(), uid)
+    def init_url(self, uid, bank_id):
+        return '%s/@@easyideal_payment?uid=%s&bank_id=%s' % (self.context.absolute_url(), uid, bank_id)
 
 # 
 # Easy-iDEAL implementation
@@ -64,6 +68,7 @@ class easyidealPay(BrowserView):
     def __call__(self):
         base_url = self.context.absolute_url()
         order_uid = self.request['uid']
+        bank_id = self.request['bank_id']
 
         easy_ideal = EasyIdeal(MERCHANT_ID, MERCHANT_KEY, MERCHANT_SECRET)
 
@@ -74,7 +79,7 @@ class easyidealPay(BrowserView):
         real_amount = D(int(amount)/100.0)
 
         try:
-            transaction_response = easy_ideal.request_transaction(real_amount, 'ING', str(ordernumber), '%s/@@easyideal_payment_success?order_id=%s'%(base_url, ordernumber))
+            transaction_response = easy_ideal.request_transaction(real_amount, bank_id, str(ordernumber), '%s/@@easyideal_payment_success?order_id=%s'%(base_url, ordernumber))
             redirect_url = transaction_response.bank_url
             transaction_id = transaction_response.transaction_id
             transaction_code = transaction_response.transaction_code
